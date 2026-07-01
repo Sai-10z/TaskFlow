@@ -1,0 +1,47 @@
+Use this prompt in another chat:
+
+> **Prompt:**
+>
+> Remove **only the unnecessary empty blank lines** from the following code.
+>
+> **Rules:**
+>
+> * Do **not** change any code, formatting, indentation, spacing, variable names, function names, JSX, HTML, classes, `div`s, or logic.
+> * Do **not** refactor or optimize anything.
+> * Do **not** add or remove any code.
+> * Preserve the existing formatting exactly as it is.
+> * **Only** delete consecutive empty lines so there is at most **one** blank line between code blocks where appropriate.
+> * Return the **entire file** with the empty lines removed.
+> * Do **not** wrap the output in Markdown or explain the changes—just return the cleaned code.
+>
+> Example:
+>
+> Before:
+>
+> ```jsx
+> <div>
+>
+>
+> <h1>Hello</h1>
+>
+>
+> <p>World</p>
+> </div>
+> ```
+>
+> After:
+>
+> ```jsx
+> <div>
+> <h1>Hello</h1>
+> <p>World</p>
+> </div>
+> ```
+>
+> Here is the code:
+>
+> ```jsx
+> // Paste your code here
+> ```
+
+This prompt will instruct the model to remove only blank lines while leaving everything else untouched.

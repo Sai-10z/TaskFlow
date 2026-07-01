@@ -1,10 +1,39 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+import "./styles/global.css";
+import App from "./App.jsx";
+
+import "./styles/toast.css";
+
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { ToastProvider } from "./context/ToastContext.jsx";
+
+
+
+createRoot(
+    document.getElementById("root")
 )
+.render(
+
+    <StrictMode>
+
+
+        <AuthProvider>
+
+
+            <ToastProvider>
+
+
+                <App />
+
+
+            </ToastProvider>
+
+
+        </AuthProvider>
+
+
+    </StrictMode>
+
+);
