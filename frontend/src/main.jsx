@@ -1,39 +1,33 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import "./styles/global.css";
-import App from "./App.jsx";
+import App from "./App";
 
+import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
+
+import "./styles/global.css";
+import "./styles/auth.css";
+import "./styles/dashboard.css";
+import "./styles/tasks.css";
+import "./styles/sidebar.css";
 import "./styles/toast.css";
 
-import { AuthProvider } from "./context/AuthContext.jsx";
-import { ToastProvider } from "./context/ToastContext.jsx";
+const rootElement = document.getElementById("root");
 
+if (!rootElement) {
+    throw new Error("Root element not found.");
+}
 
-
-createRoot(
-    document.getElementById("root")
-)
-.render(
-
+createRoot(rootElement).render(
     <StrictMode>
-
-
         <AuthProvider>
-
-
-            <ToastProvider>
-
-
-                <App />
-
-
-            </ToastProvider>
-
-
+            <ThemeProvider>
+                <ToastProvider>
+                    <App />
+                </ToastProvider>
+            </ThemeProvider>
         </AuthProvider>
-
-
     </StrictMode>
-
 );

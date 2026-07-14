@@ -29,7 +29,6 @@ const protect = async (req, res, next) => {
                 message: "Not authorized"
             });
         }
-
     } catch (error) {
         console.error(error);
 

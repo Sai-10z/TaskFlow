@@ -1,505 +1,227 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { motion } from "framer-motion";
 
 import API from "../api/axios";
+import { useToast } from "../context/ToastContext";
 
 import {
-    useNavigate
-}
-from "react-router-dom";
-
-
-import {
-    useToast
-}
-from "../context/ToastContext";
-
-
-import {
-    motion
-}
-from "framer-motion";
-
-
-import {
-    UserPlus,
+    CheckSquare,
     ShieldCheck,
     Zap,
-    CheckSquare
-}
-from "lucide-react";
-
+    UserPlus,
+    User,
+    Mail,
+    Lock,
+    ArrowRight,
+} from "lucide-react";
 
 import "../styles/auth.css";
 
+function Register() {
+    const navigate = useNavigate();
 
+    const { showToast } = useToast();
 
-function Register(){
+    const [username, setUsername] = useState("");
 
+    const [email, setEmail] = useState("");
 
-const navigate = useNavigate();
+    const [password, setPassword] = useState("");
 
+    const [loading, setLoading] = useState(false);
 
-const {showToast}=useToast();
+    const handleRegister = async (e) => {
+        e.preventDefault();
 
+        if (
+            !username.trim() ||
+            !email.trim() ||
+            !password.trim()
+        ) {
+            showToast(
+                "Please fill in all required fields.",
+                "warning"
+            );
+            return;
+        }
 
+        try {
+            setLoading(true);
 
-const [username,setUsername]=useState("");
+            await API.post("/auth/register", {
+                username: username.trim(),
+                email: email.trim(),
+                password,
+            });
 
-const [email,setEmail]=useState("");
+            showToast(
+                "Account created successfully 🎉",
+                "success"
+            );
 
-const [password,setPassword]=useState("");
+            navigate("/login", {
+                replace: true,
+            });
+        } catch (error) {
+            console.error(error);
 
-const [loading,setLoading]=useState(false);
+            showToast(
+                error.response?.data?.message ||
+                    "Registration failed.",
+                "error"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    return (
+        <div className="auth-container">
+            <motion.div
+                className="auth-card glass-card"
+                initial={{
+                    opacity: 0,
+                    y: 40,
+                }}
+                animate={{
+                    opacity: 1,
+                    y: 0,
+                }}
+                transition={{
+                    duration: 0.45,
+                }}
+            >
+                <div className="brand-section">
+                    <div className="brand-logo">
+                        <CheckSquare size={44} />
+                    </div>
 
+                    <h1>TaskFlow</h1>
 
+                    <p>
+                        Premium Productivity Workspace
+                    </p>
+                </div>
 
+                <div className="auth-heading">
+                    <h2>Create Account 🚀</h2>
 
+                    <p>
+                        Join TaskFlow and organize your
+                        work like never before.
+                    </p>
+                </div>
 
+                <form
+                    className="auth-form"
+                    onSubmit={handleRegister}
+                >
+                    <div className="input-group">
+                        <User size={18} />
 
-const handleRegister = async(e)=>{
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(
+                                    e.target.value
+                                )
+                            }
+                            autoComplete="username"
+                        />
+                    </div>
 
+                    <div className="input-group">
+                        <Mail size={18} />
 
-e.preventDefault();
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            value={email}
+                            onChange={(e) =>
+                                setEmail(
+                                    e.target.value
+                                )
+                            }
+                            autoComplete="email"
+                        />
+                    </div>
 
+                    <div className="input-group">
+                        <Lock size={18} />
 
-setLoading(true);
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(
+                                    e.target.value
+                                )
+                            }
+                            autoComplete="new-password"
+                        />
+                    </div>
 
+                    <motion.button
+                        type="submit"
+                        className="auth-button"
+                        disabled={loading}
+                        whileHover={{
+                            scale: loading ? 1 : 1.02,
+                        }}
+                        whileTap={{
+                            scale: loading ? 1 : 0.98,
+                        }}
+                    >
+                        {loading ? (
+                            "Creating Account..."
+                        ) : (
+                            <>
+                                Create Account
+                                <ArrowRight size={18} />
+                            </>
+                        )}
+                    </motion.button>
+                </form>
 
+                <div className="feature-row">
+                    <div>
+                        <ShieldCheck size={18} />
+                        Secure
+                    </div>
 
-try{
+                    <div>
+                        <Zap size={18} />
+                        Fast Setup
+                    </div>
 
+                    <div>
+                        <UserPlus size={18} />
+                        Ready in Minutes
+                    </div>
+                </div>
 
-await API.post(
+                <div className="auth-link">
+                    <span>
+                        Already have an account?
+                    </span>
 
-"/auth/register",
-
-{
-
-username,
-
-email,
-
-password
-
+                    <button
+                        type="button"
+                        onClick={() =>
+                            navigate("/login")
+                        }
+                    >
+                        Login
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
 }
-
-);
-
-
-
-
-
-showToast(
-
-"Account created successfully 🚀 Redirecting to login...",
-
-"success"
-
-);
-
-
-
-
-
-setTimeout(()=>{
-
-
-navigate("/login");
-
-
-},1500);
-
-
-
-
-
-}
-
-
-
-catch(error){
-
-
-
-showToast(
-
-error.response?.data?.message ||
-
-"Registration failed",
-
-"error"
-
-);
-
-
-
-}
-
-
-
-finally{
-
-
-setLoading(false);
-
-
-}
-
-
-
-};
-
-
-
-
-
-
-
-
-
-return(
-
-
-
-<div className="auth-container">
-
-
-
-<motion.div
-
-
-className="auth-card"
-
-
-initial={{
-
-opacity:0,
-
-y:40
-
-}}
-
-
-animate={{
-
-opacity:1,
-
-y:0
-
-}}
-
-
-transition={{
-
-duration:0.5
-
-}}
-
-
-
->
-
-
-
-
-
-<div className="brand-section">
-
-
-<CheckSquare size={45}/>
-
-
-
-<h1>
-
-TaskFlow
-
-</h1>
-
-
-
-<p>
-
-Build. Track. Complete.
-
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-<h2>
-
-Create Account 🚀
-
-</h2>
-
-
-
-
-<p className="subtitle">
-
-Start managing your workflow smarter
-
-</p>
-
-
-
-
-
-
-
-
-
-<form onSubmit={handleRegister}>
-
-
-
-
-
-
-<input
-
-
-type="text"
-
-
-placeholder="Enter username"
-
-
-value={username}
-
-
-onChange={
-
-(e)=>setUsername(e.target.value)
-
-}
-
-
-/>
-
-
-
-
-
-
-
-
-<input
-
-
-type="email"
-
-
-placeholder="Enter email"
-
-
-value={email}
-
-
-onChange={
-
-(e)=>setEmail(e.target.value)
-
-}
-
-
-/>
-
-
-
-
-
-
-
-
-
-<input
-
-
-type="password"
-
-
-placeholder="Create password"
-
-
-value={password}
-
-
-onChange={
-
-(e)=>setPassword(e.target.value)
-
-}
-
-
-/>
-
-
-
-
-
-
-
-
-
-<button
-
-
-className="auth-button"
-
-
-disabled={loading}
-
-
->
-
-
-
-{
-
-loading
-
-?
-
-"Creating Account..."
-
-:
-
-"Create Account"
-
-}
-
-
-
-</button>
-
-
-
-
-
-
-
-</form>
-
-
-
-
-
-
-
-
-
-<div className="feature-row">
-
-
-<div>
-
-<ShieldCheck size={18}/>
-
-Secure
-
-</div>
-
-
-
-
-<div>
-
-<Zap size={18}/>
-
-Fast Setup
-
-</div>
-
-
-
-<div>
-
-<UserPlus size={18}/>
-
-Easy Start
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-
-<div className="auth-link">
-
-
-
-Already have an account?
-
-
-
-
-
-<button
-
-
-onClick={()=>navigate("/login")}
-
-
->
-
-
-Login
-
-
-</button>
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-</motion.div>
-
-
-
-
-
-
-
-</div>
-
-
-
-);
-
-
-
-}
-
-
-
 
 export default Register;

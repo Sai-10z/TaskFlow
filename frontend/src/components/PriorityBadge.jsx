@@ -1,76 +1,52 @@
+import { memo } from "react";
 import {
     Flame,
     Minus,
-    Leaf
+    Leaf,
+    CheckCircle2,
 } from "lucide-react";
 
+function PriorityBadge({ priority }) {
+    const level = (priority || "LOW").toUpperCase();
 
+    const config = {
+        HIGH: {
+            label: "High",
+            icon: <Flame size={14} />,
+            className: "priority-high",
+        },
+        MEDIUM: {
+            label: "Medium",
+            icon: <Minus size={14} />,
+            className: "priority-medium",
+        },
+        LOW: {
+            label: "Low",
+            icon: <Leaf size={14} />,
+            className: "priority-low",
+        },
+        COMPLETED: {
+            label: "Completed",
+            icon: <CheckCircle2 size={14} />,
+            className: "priority-completed",
+        },
+    };
 
-function PriorityBadge({priority}){
+    const current = config[level] || config.LOW;
 
+    return (
+        <span
+            className={`priority-badge ${current.className}`}
+        >
+            <span className="priority-icon">
+                {current.icon}
+            </span>
 
-const level = priority?.toLowerCase() || "low";
-
-
-
-const config = {
-
-
-high:{
-
-label:"HIGH",
-
-icon:<Flame size={14}/>
-
-},
-
-
-medium:{
-
-label:"MEDIUM",
-
-icon:<Minus size={14}/>
-
-},
-
-
-low:{
-
-label:"LOW",
-
-icon:<Leaf size={14}/>
-
+            <span className="priority-text">
+                {current.label}
+            </span>
+        </span>
+    );
 }
 
-
-};
-
-
-
-
-return(
-
-
-<span className={`priority-badge ${level}`}>
-
-
-
-{config[level].icon}
-
-
-
-{config[level].label}
-
-
-
-</span>
-
-
-);
-
-
-}
-
-
-
-export default PriorityBadge;
+export default memo(PriorityBadge);
