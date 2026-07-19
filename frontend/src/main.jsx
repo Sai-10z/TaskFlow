@@ -17,17 +17,17 @@ import "./styles/toast.css";
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-    throw new Error("Root element not found.");
+  throw new Error("Root element not found.");
 }
 
 createRoot(rootElement).render(
-    <StrictMode>
-        <AuthProvider>
-            <ThemeProvider>
-                <ToastProvider>
-                    <App />
-                </ToastProvider>
-            </ThemeProvider>
-        </AuthProvider>
-    </StrictMode>
+  <StrictMode>
+    <AuthProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </ThemeProvider>
+    </AuthProvider>
+  </StrictMode>,
 );

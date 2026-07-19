@@ -2,34 +2,25 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function ProtectedRoute({ children }) {
-    const {
-        isAuthenticated,
-        isLoading,
-    } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
-    const location = useLocation();
+  const location = useLocation();
 
-    if (isLoading) {
-        return (
-            <div className="page-loader">
-                <div className="loader"></div>
+  if (isLoading) {
+    return (
+      <div className="page-loader">
+        <div className="loader"></div>
 
-                <p>Loading...</p>
-            </div>
-        );
-    }
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
-    if (!isAuthenticated) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-                state={{ from: location.pathname }}
-            />
-        );
-    }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
 
-    return children;
+  return children;
 }
 
 export default ProtectedRoute;

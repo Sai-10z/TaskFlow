@@ -1,339 +1,158 @@
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-
+import { useMemo } from "react";
+import { motion } from "framer-motion";
 import PriorityBadge from "./PriorityBadge";
+import { Draggable } from "@hello-pangea/dnd";
 
 import {
-    CheckCircle2,
-    Edit3,
-    Trash2,
-    CalendarDays,
-    Clock3,
-    FileText,
-    Eye,
-    X,
-    AlertTriangle,
+  CheckCircle2,
+  CalendarDays,
+  Clock3,
+  Eye,
+  AlertTriangle,
+  CheckSquare,
 } from "lucide-react";
 
-function TaskCard({
-    task,
-    editTask,
-    deleteTask,
-    completeTask,
-}) {
-    const [showDetails, setShowDetails] = useState(false);
+function TaskCard({ task, index, onViewDetails }) {
+  const cardType = task.completed ? "completed" : task.priority?.toLowerCase();
 
-    const cardType = task.completed
-        ? "completed"
-        : task.priority?.toLowerCase();
+  const deadlineDate = useMemo(() => {
+    if (!task.deadline) return null;
+    return new Date(task.deadline);
+  }, [task.deadline]);
 
-    const createdDate = useMemo(() => {
-        if (!task.created_at) return "Unknown";
+  const isOverdue = useMemo(() => {
+    if (!deadlineDate || task.completed) return false;
+    const today = new Date();
+    const deadline = new Date(deadlineDate);
+    today.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+    return deadline < today;
+  }, [deadlineDate, task.completed]);
 
-        return new Date(task.created_at).toLocaleString();
-    }, [task.created_at]);
 
-    const deadlineDate = useMemo(() => {
-        if (!task.deadline) return null;
 
-        return new Date(task.deadline);
-    }, [task.deadline]);
+  const completedSubtasks = task.subtasks
+    ? task.subtasks.filter((st) => st.is_completed).length
+    : 0;
+  const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
 
-    const isOverdue = useMemo(() => {
-        if (!deadlineDate || task.completed) return false;
-
-        const today = new Date();
-        const deadline = new Date(deadlineDate);
-
-        today.setHours(0, 0, 0, 0);
-        deadline.setHours(0, 0, 0, 0);
-
-        return deadline < today;
-    }, [deadlineDate, task.completed]);
-
-    const shortDescription =
-        task.description?.length > 100
-            ? `${task.description.slice(0, 100)}...`
-            : task.description || "No description provided.";
-
-    return (
+  return (
+    <Draggable draggableId={String(task.id)} index={index}>
+      {(provided, snapshot) => (
         <>
-            <motion.div
-                layout
-                className={`task-card ${cardType}`}
-                initial={{
-                    opacity: 0,
-                    y: 20,
-                }}
-                animate={{
-                    opacity: 1,
-                    y: 0,
-                }}
-                whileHover={{
-                    y: -6,
-                    scale: 1.01,
-                }}
-                transition={{
-                    duration: 0.25,
-                }}
+          <motion.div
+            layout
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            className={`task-card ${cardType}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -6, scale: 1.01 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              ...provided.draggableProps.style,
+            }}
+          >
+            <div
+              className={`task-main ${snapshot.isDragging ? "tilting" : ""}`}
             >
-                <div className="task-main">
+              <div className="task-title-row">
+                <h2>{task.title}</h2>
+                <PriorityBadge
+                  priority={task.completed ? "COMPLETED" : task.priority}
+                />
+              </div>
 
-                    <div className="task-title-row">
 
-                        <h2>{task.title}</h2>
 
-                        <PriorityBadge
-                            priority={
-                                task.completed
-                                    ? "COMPLETED"
-                                    : task.priority
-                            }
-                        />
-
-                    </div>
-
-                    <p className="task-description-preview">
-                        {shortDescription}
-                    </p>
-
-                    {task.deadline && (
-                        <div className="created-date">
-
-                            <CalendarDays size={15} />
-
-                            <span>
-                                Due:{" "}
-                                {new Date(
-                                    task.deadline
-                                ).toLocaleDateString()}
-                            </span>
-
-                            {isOverdue && (
-                                <span className="overdue-badge">
-                                    <AlertTriangle size={13} />
-                                    Overdue
-                                </span>
-                            )}
-
-                        </div>
-                    )}
-
-                    <div className="task-bottom-row">
-
-                        <div className="task-status">
-
-                            {task.completed ? (
-                                <>
-                                    <CheckCircle2 size={15} />
-                                    Completed
-                                </>
-                            ) : (
-                                <>
-                                    <Clock3 size={15} />
-                                    Pending
-                                </>
-                            )}
-
-                        </div>
-
-                        <button
-                            type="button"
-                            className="details-button"
-                            onClick={() =>
-                                setShowDetails(true)
-                            }
-                            aria-label="View task"
-                        >
-                            <Eye size={18} />
-                        </button>
-
-                    </div>
-
+              {totalSubtasks > 0 && (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    background: "var(--bg-secondary)",
+                    padding: "8px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <CheckSquare size={14} color="var(--primary)" />
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "4px",
+                      background: "rgba(255,255,255,0.1)",
+                      borderRadius: "2px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        background: "var(--primary)",
+                        width: `${(completedSubtasks / totalSubtasks) * 100}%`,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    {completedSubtasks}/{totalSubtasks}
+                  </span>
                 </div>
-            </motion.div>
+              )}
 
-            <AnimatePresence>
+              {task.deadline && (
+                <div
+                  className="created-date"
+                  style={{ marginTop: totalSubtasks > 0 ? "12px" : "0" }}
+                >
+                  <CalendarDays size={15} />
+                  <span>
+                    Due: {new Date(task.deadline).toLocaleDateString()}
+                  </span>
+                  {isOverdue && (
+                    <span className="overdue-badge">
+                      <AlertTriangle size={13} /> Overdue
+                    </span>
+                  )}
+                </div>
+              )}
 
-                {showDetails && (
-
-                    <motion.div
-                        className="modal-overlay"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() =>
-                            setShowDetails(false)
-                        }
-                    >
-
-                        <motion.div
-                            className="task-popup glass-card"
-                            initial={{
-                                scale: 0.9,
-                                opacity: 0,
-                            }}
-                            animate={{
-                                scale: 1,
-                                opacity: 1,
-                            }}
-                            exit={{
-                                scale: 0.9,
-                                opacity: 0,
-                            }}
-                            transition={{
-                                duration: 0.25,
-                            }}
-                            onClick={(e) =>
-                                e.stopPropagation()
-                            }
-                        >
-
-                            <button
-                                type="button"
-                                className="close-modal"
-                                onClick={() =>
-                                    setShowDetails(false)
-                                }
-                                aria-label="Close"
-                            >
-                                <X size={20} />
-                            </button>
-
-                            <h2>{task.title}</h2>
-
-                            <br />
-
-                            <PriorityBadge
-                                priority={
-                                    task.completed
-                                        ? "COMPLETED"
-                                        : task.priority
-                                }
-                            />
-
-                            <br />
-
-                            <div className="popup-item">
-
-                                <FileText size={18} />
-
-                                <div>
-
-                                    <strong>Description</strong>
-
-                                    <p>
-                                        {task.description ||
-                                            "No description provided."}
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                            <br />
-
-                            <div className="popup-item">
-
-                                <CalendarDays size={18} />
-
-                                <div>
-
-                                    <strong>Created</strong>
-
-                                    <p>{createdDate}</p>
-
-                                </div>
-
-                            </div>
-
-                            {task.deadline && (
-                                <>
-                                    <br />
-
-                                    <div className="popup-item">
-
-                                        <CalendarDays size={18} />
-
-                                        <div>
-
-                                            <strong>
-                                                Deadline
-                                            </strong>
-
-                                            <p>
-                                                {new Date(
-                                                    task.deadline
-                                                ).toLocaleDateString()}
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-                                </>
-                            )}
-
-                            {isOverdue && (
-                                <>
-                                    <br />
-
-                                    <div className="overdue-message">
-                                        ⚠ This task is overdue.
-                                    </div>
-                                </>
-                            )}
-
-                            <div className="task-actions">
-
-                                {!task.completed && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setShowDetails(false);
-                                            completeTask(task.id);
-                                        }}
-                                    >
-                                        <CheckCircle2
-                                            size={16}
-                                        />
-                                        Complete
-                                    </button>
-                                )}
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowDetails(false);
-                                        editTask(task);
-                                    }}
-                                >
-                                    <Edit3 size={16} />
-                                    Edit
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className="delete-action"
-                                    onClick={() => {
-                                        setShowDetails(false);
-                                        deleteTask(task.id);
-                                    }}
-                                >
-                                    <Trash2 size={16} />
-                                    Delete
-                                </button>
-
-                            </div>
-
-                        </motion.div>
-
-                    </motion.div>
-
-                )}
-
-            </AnimatePresence>
+              <div className="task-bottom-row">
+                <div className="task-status">
+                  {task.completed ? (
+                    <>
+                      <CheckCircle2 size={15} /> Completed
+                    </>
+                  ) : (
+                    <>
+                      <Clock3 size={15} /> Pending
+                    </>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="details-button"
+                  onClick={() => onViewDetails(task)}
+                  aria-label="View task"
+                >
+                  <Eye size={18} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </>
-    );
+      )}
+    </Draggable>
+  );
 }
 
 export default TaskCard;

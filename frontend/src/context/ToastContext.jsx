@@ -1,11 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 import Toast from "../components/Toast";
@@ -13,77 +14,68 @@ import Toast from "../components/Toast";
 const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
-    const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState(null);
 
-    const timerRef = useRef(null);
+  const timerRef = useRef(null);
 
-    const clearToastTimer = useCallback(() => {
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-            timerRef.current = null;
-        }
-    }, []);
+  const clearToastTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
-    const hideToast = useCallback(() => {
-        clearToastTimer();
+  const hideToast = useCallback(() => {
+    clearToastTimer();
+    setToast(null);
+  }, [clearToastTimer]);
+
+  const showToast = useCallback(
+    (message, type = "success", duration = 3000) => {
+      clearToastTimer();
+
+      setToast({
+        message,
+        type,
+      });
+
+      timerRef.current = setTimeout(() => {
         setToast(null);
-    }, [clearToastTimer]);
+        timerRef.current = null;
+      }, duration);
+    },
+    [clearToastTimer],
+  );
 
-    const showToast = useCallback(
-        (
-            message,
-            type = "success",
-            duration = 3000
-        ) => {
-            clearToastTimer();
+  useEffect(() => {
+    return () => {
+      clearToastTimer();
+    };
+  }, [clearToastTimer]);
 
-            setToast({
-                message,
-                type,
-            });
+  const value = useMemo(
+    () => ({
+      showToast,
+      hideToast,
+    }),
+    [showToast, hideToast],
+  );
 
-            timerRef.current = setTimeout(() => {
-                setToast(null);
-                timerRef.current = null;
-            }, duration);
-        },
-        [clearToastTimer]
-    );
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
 
-    useEffect(() => {
-        return () => {
-            clearToastTimer();
-        };
-    }, [clearToastTimer]);
-
-    const value = useMemo(
-        () => ({
-            showToast,
-            hideToast,
-        }),
-        [showToast, hideToast]
-    );
-
-    return (
-        <ToastContext.Provider value={value}>
-            {children}
-
-            <Toast
-                toast={toast}
-                onClose={hideToast}
-            />
-        </ToastContext.Provider>
-    );
+      <Toast toast={toast} onClose={hideToast} />
+    </ToastContext.Provider>
+  );
 }
 
 export function useToast() {
-    const context = useContext(ToastContext);
+  const context = useContext(ToastContext);
 
-    if (!context) {
-        throw new Error(
-            "useToast must be used within a ToastProvider."
-        );
-    }
+  if (!context) {
+    throw new Error("useToast must be used within a ToastProvider.");
+  }
 
-    return context;
+  return context;
 }

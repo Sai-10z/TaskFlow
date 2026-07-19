@@ -22,10 +22,10 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "TaskFlow API Running"
-    });
+  res.status(200).json({
+    success: true,
+    message: "TaskFlow API Running",
+  });
 });
 
 app.use("/api/health", healthRoutes);
