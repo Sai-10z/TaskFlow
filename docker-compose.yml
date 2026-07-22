@@ -18,9 +18,6 @@ services:
 
   backend:
     image: sai102402/taskflow-backend:latest
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
     container_name: taskflow_backend
     restart: always
     ports:
@@ -42,9 +39,6 @@ services:
 
   frontend:
     image: sai102402/taskflow-frontend:latest
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
     container_name: taskflow_frontend
     restart: always
     ports:
