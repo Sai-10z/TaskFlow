@@ -17,6 +17,7 @@ services:
       - taskflow-network
 
   backend:
+    image: sai102402/taskflow-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -40,6 +41,7 @@ services:
       - taskflow-network
 
   frontend:
+    image: sai102402/taskflow-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
