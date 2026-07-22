@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        PATH = "C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\bin;${env.PATH}"
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
         DOCKER_REGISTRY = 'sai102402'
         APP_NAME_FRONTEND = 'taskflow-frontend'
