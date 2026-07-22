@@ -31,9 +31,11 @@ export const runMigrations = async (isStandalone = false) => {
           description TEXT,
           priority VARCHAR(50) DEFAULT 'MEDIUM',
           status VARCHAR(50) DEFAULT 'TODO',
+          completed BOOLEAN DEFAULT FALSE,
           deadline TIMESTAMP,
           tags TEXT[] DEFAULT '{}',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
 
@@ -73,11 +75,13 @@ export const runMigrations = async (isStandalone = false) => {
       `);
       console.log("Notifications table created.");
 
-      // 4. Update Tasks Table for tags and status
+      // 4. Update Tasks Table for tags, completed, status and updated_at
       await pool.query(`
         ALTER TABLE tasks
         ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'TODO',
-        ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
+        ADD COLUMN IF NOT EXISTS completed BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}',
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       `);
       console.log("Tasks table updated with status and tags.");
 
