@@ -97,12 +97,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: "${SSH_KEY_ID}", keyFileVariable: 'SSH_KEY')]) {
-                        def sshCmd = "ssh -i \"%SSH_KEY%\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
+                        def remoteScript = "([ -d /home/${EC2_USER}/TaskFlow/.git ] && cd /home/${EC2_USER}/TaskFlow && git pull origin main) || (git clone https://github.com/Sai-10z/TaskFlow.git /home/${EC2_USER}/TaskFlow); cd /home/${EC2_USER}/TaskFlow && docker-compose pull && docker-compose up -d --remove-orphans"
                         if (isUnix()) {
-                            sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
+                            sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"${remoteScript}\""
                         } else {
                             bat "icacls \"%SSH_KEY%\" /inheritance:r /grant:r \"*S-1-5-32-544:F\" /grant:r \"SYSTEM:F\""
-                            bat sshCmd
+                            bat "ssh -i \"%SSH_KEY%\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"${remoteScript}\""
                         }
                     }
                 }
