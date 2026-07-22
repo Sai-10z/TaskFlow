@@ -83,7 +83,7 @@ pipeline {
                     } else {
                         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             powershell '''
-                                $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
+                                echo $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
                             '''
                             bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}"
                             bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest"
