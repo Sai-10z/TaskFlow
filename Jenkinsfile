@@ -101,6 +101,7 @@ pipeline {
                         if (isUnix()) {
                             sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
                         } else {
+                            bat "icacls \"%SSH_KEY%\" /inheritance:r /grant:r \"%USERNAME%:F\" /grant:r \"SYSTEM:F\""
                             bat sshCmd
                         }
                     }
