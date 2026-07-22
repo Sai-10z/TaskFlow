@@ -97,7 +97,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: "${SSH_KEY_ID}", keyFileVariable: 'SSH_KEY')]) {
-                        def remoteScript = "([ -d /home/${EC2_USER}/TaskFlow/.git ] && cd /home/${EC2_USER}/TaskFlow && git pull origin main) || (git clone https://github.com/Sai-10z/TaskFlow.git /home/${EC2_USER}/TaskFlow); cd /home/${EC2_USER}/TaskFlow && docker-compose pull && docker-compose up -d --remove-orphans"
+                        def remoteScript = "cd /home/${EC2_USER}/TaskFlow && ([ -d .git ] || (git init && git remote add origin https://github.com/Sai-10z/TaskFlow.git)) && git fetch origin main && git checkout -f main && docker-compose pull && docker-compose up -d --remove-orphans"
                         if (isUnix()) {
                             sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"${remoteScript}\""
                         } else {
