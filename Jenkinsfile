@@ -7,8 +7,8 @@ pipeline {
         APP_NAME_FRONTEND = 'taskflow-frontend'
         APP_NAME_BACKEND = 'taskflow-backend'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        EC2_USER = 'ec2-user'
-        EC2_IP = 'your.elastic.ip.address'
+        EC2_USER = 'ubuntu'
+        EC2_IP = '65.2.35.247'
         SSH_KEY_ID = 'ec2-ssh-key'
     }
 
@@ -80,7 +80,7 @@ pipeline {
                 sshagent(["${SSH_KEY_ID}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
-                            cd /home/ec2-user/TaskFlow &&
+                            cd /home/${EC2_USER}/TaskFlow &&
                             git pull origin main &&
                             docker-compose pull &&
                             docker-compose up -d --remove-orphans
