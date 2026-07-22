@@ -95,11 +95,11 @@ pipeline {
 
         stage('Deploy Automatically to EC2') {
             steps {
-                sshagent(["${SSH_KEY_ID}"]) {
-                    script {
-                        def sshCmd = "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: "${SSH_KEY_ID}", keyFileVariable: 'SSH_KEY')]) {
+                        def sshCmd = "ssh -i \"%SSH_KEY%\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
                         if (isUnix()) {
-                            sh sshCmd
+                            sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
                         } else {
                             bat sshCmd
                         }
