@@ -604,6 +604,7 @@ function Tasks() {
         description={description}
         priority={priority}
         deadline={deadline}
+        subtasks={subtasks}
         setTitle={setTitle}
         setDescription={setDescription}
         setPriority={setPriority}
