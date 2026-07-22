@@ -1,8 +1,39 @@
 import pool from "./config/db.js";
 
-const runMigrations = async () => {
+export const runMigrations = async (isStandalone = false) => {
   try {
     console.log("Running database migrations...");
+
+    // 0. Ensure Users and Tasks tables exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        avatar_url VARCHAR(255),
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token VARCHAR(255),
+        reset_password_token VARCHAR(255),
+        reset_password_expires TIMESTAMP,
+        theme VARCHAR(50) DEFAULT 'dark',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        priority VARCHAR(50) DEFAULT 'MEDIUM',
+        status VARCHAR(50) DEFAULT 'TODO',
+        deadline TIMESTAMP,
+        tags TEXT[] DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
     // 1. Alter Users Table
     await pool.query(`
@@ -61,11 +92,14 @@ const runMigrations = async () => {
     console.log("Subtasks table created.");
 
     console.log("All migrations completed successfully.");
-    process.exit(0);
+    if (isStandalone) process.exit(0);
   } catch (error) {
     console.error("Migration failed:", error);
-    process.exit(1);
+    if (isStandalone) process.exit(1);
   }
 };
 
-runMigrations();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runMigrations(true);
+}
+
