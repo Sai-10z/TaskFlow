@@ -2,15 +2,14 @@ pipeline {
     agent any
 
     environment {
-        PATH = "C:\\Program Files\\Git\\usr\\bin;C:\\Program Files\\Git\\bin;${env.PATH}"
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
-        DOCKER_REGISTRY = 'sai102402'
-        APP_NAME_FRONTEND = 'taskflow-frontend'
-        APP_NAME_BACKEND = 'taskflow-backend'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
-        EC2_USER = 'ubuntu'
-        EC2_IP = '65.2.35.247'
-        SSH_KEY_ID = 'ec2-ssh-key'
+        DOCKER_REGISTRY       = 'sai102402'
+        APP_NAME_FRONTEND     = 'taskflow-frontend'
+        APP_NAME_BACKEND      = 'taskflow-backend'
+        IMAGE_TAG             = "${env.BUILD_NUMBER}"
+        EC2_USER              = 'ubuntu'
+        EC2_IP                = '65.2.35.247'
+        SSH_KEY_ID            = 'ec2-ssh-key'
     }
 
     stages {
@@ -23,10 +22,14 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
-                    sh 'npm ci'
+                    script {
+                        if (isUnix()) { sh 'npm ci' } else { bat 'npm ci' }
+                    }
                 }
                 dir('backend') {
-                    sh 'npm ci'
+                    script {
+                        if (isUnix()) { sh 'npm ci' } else { bat 'npm ci' }
+                    }
                 }
             }
         }
@@ -34,16 +37,19 @@ pipeline {
         stage('Run Automated Tests') {
             steps {
                 dir('backend') {
-                    sh 'npm run test'
+                    script {
+                        if (isUnix()) { sh 'npm run test' } else { bat 'npm run test' }
+                    }
                 }
             }
         }
 
         stage('Build Assets') {
             steps {
-                // Testing and building code locally before Docker
                 dir('frontend') {
-                    sh 'npm run build'
+                    script {
+                        if (isUnix()) { sh 'npm run build' } else { bat 'npm run build' }
+                    }
                 }
             }
         }
@@ -51,13 +57,15 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    // Build frontend image
-                    docker.build("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}", "./frontend")
-                    docker.build("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest", "./frontend")
-                    
-                    // Build backend image
-                    docker.build("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG}", "./backend")
-                    docker.build("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest", "./backend")
+                    if (isUnix()) {
+                        docker.build("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}", "./frontend")
+                        docker.build("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest", "./frontend")
+                        docker.build("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG}", "./backend")
+                        docker.build("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest", "./backend")
+                    } else {
+                        bat "docker build -t ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG} -t ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest ./frontend"
+                        bat "docker build -t ${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG} -t ${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest ./backend"
+                    }
                 }
             }
         }
@@ -65,12 +73,21 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
-                        docker.image("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}").push()
-                        docker.image("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest").push()
-                        
-                        docker.image("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG}").push()
-                        docker.image("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest").push()
+                    if (isUnix()) {
+                        docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
+                            docker.image("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}").push()
+                            docker.image("${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest").push()
+                            docker.image("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG}").push()
+                            docker.image("${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest").push()
+                        }
+                    } else {
+                        withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                            bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:${IMAGE_TAG}"
+                            bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_FRONTEND}:latest"
+                            bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:${IMAGE_TAG}"
+                            bat "docker push ${DOCKER_REGISTRY}/${APP_NAME_BACKEND}:latest"
+                        }
                     }
                 }
             }
@@ -79,14 +96,14 @@ pipeline {
         stage('Deploy Automatically to EC2') {
             steps {
                 sshagent(["${SSH_KEY_ID}"]) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
-                            cd /home/${EC2_USER}/TaskFlow &&
-                            git pull origin main &&
-                            docker-compose pull &&
-                            docker-compose up -d --remove-orphans
-                        "
-                    """
+                    script {
+                        def sshCmd = "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"cd /home/${EC2_USER}/TaskFlow && git pull origin main && docker-compose pull && docker-compose up -d --remove-orphans\""
+                        if (isUnix()) {
+                            sh sshCmd
+                        } else {
+                            bat sshCmd
+                        }
+                    }
                 }
             }
         }
@@ -95,11 +112,9 @@ pipeline {
     post {
         success {
             echo 'Deployment successful! Application is live.'
-            // Optional: slackSend(message: "Successfully deployed TaskFlow Build #${env.BUILD_NUMBER}")
         }
         failure {
             echo 'Deployment failed! Check Jenkins logs.'
-            // Optional: slackSend(message: "Failed deployment TaskFlow Build #${env.BUILD_NUMBER}", color: 'danger')
         }
     }
 }
