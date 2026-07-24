@@ -71,16 +71,16 @@ To run the entire stack (Frontend, Backend, and PostgreSQL) in containers, use D
 1. Configure the `.env` file in the `backend` directory with your database credentials and JWT secret.
 2. Build and start the containers from the project root:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 3. The application will be available at:
    - Frontend: `http://localhost`
    - Backend API: `http://localhost:5000/api`
 
 **Useful Docker Commands:**
-- View logs: `docker-compose logs -f`
-- Stop containers: `docker-compose down`
-- Rebuild containers after changes: `docker-compose up -d --build`
+- View logs: `docker compose logs -f`
+- Stop containers: `docker compose down`
+- Rebuild containers after changes: `docker compose up -d --build`
 
 ---
 
@@ -93,7 +93,7 @@ TaskFlow includes a complete Jenkins CI/CD pipeline and AWS EC2 deployment scrip
 2. In Jenkins, add a credential named `dockerhub-credentials` with your username and password/token.
 
 ### AWS EC2 Setup
-1. Provision an Ubuntu EC2 instance and associate an Elastic IP.
+1. Provision a Linux server (Ubuntu 22.04 LTS recommended).
 2. Configure Security Groups to allow port 80 (HTTP), 443 (HTTPS), 22 (SSH), and optionally 5000 (API).
 3. SSH into the instance and install Docker and Docker Compose.
 4. Add the EC2 SSH private key to Jenkins as a credential named `ec2-ssh-key`.
