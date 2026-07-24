@@ -3,12 +3,12 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
-        DOCKER_REGISTRY       = 'sai102402'
+        DOCKER_REGISTRY       = 'your-dockerhub-username'
         APP_NAME_FRONTEND     = 'taskflow-frontend'
         APP_NAME_BACKEND      = 'taskflow-backend'
         IMAGE_TAG             = "${env.BUILD_NUMBER}"
         EC2_USER              = 'ubuntu'
-        EC2_IP                = '65.2.35.247'
+        EC2_IP                = 'your-ec2-public-ip'
         SSH_KEY_ID            = 'ec2-ssh-key'
     }
 
@@ -97,7 +97,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: "${SSH_KEY_ID}", keyFileVariable: 'SSH_KEY')]) {
-                        def remoteScript = "cd /home/${EC2_USER}/TaskFlow && ([ -d .git ] || (git init && git remote add origin https://github.com/Sai-10z/TaskFlow.git)) && git fetch origin main && git reset --hard origin/main && docker-compose pull && docker-compose down && docker-compose up -d --remove-orphans && sleep 3 && echo '=== DOCKER CONTAINER STATUS ===' && docker ps -a && echo '=== BACKEND LOGS ===' && docker logs taskflow_backend --tail 50"
+                        def remoteScript = "cd /home/${EC2_USER}/TaskFlow && ([ -d .git ] || (git init && git remote add origin https://github.com/your-username/TaskFlow.git)) && git fetch origin main && git reset --hard origin/main && docker-compose pull && docker-compose down && docker-compose up -d --remove-orphans && sleep 3 && echo '=== DOCKER CONTAINER STATUS ===' && docker ps -a && echo '=== BACKEND LOGS ===' && docker logs taskflow_backend --tail 50"
                         if (isUnix()) {
                             sh "ssh -i \"${SSH_KEY}\" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \"${remoteScript}\""
                         } else {

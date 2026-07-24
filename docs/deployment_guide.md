@@ -27,7 +27,7 @@ Install docker-compose plugin as per official docs.
 ## 3. Cloning and Setup
 Clone the repository:
 ```bash
-git clone https://github.com/Sai-10z/TaskFlow.git
+git clone https://github.com/your-username/TaskFlow.git
 cd TaskFlow
 ```
 

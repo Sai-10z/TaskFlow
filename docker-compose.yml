@@ -17,7 +17,8 @@ services:
       - taskflow-network
 
   backend:
-    image: sai102402/taskflow-backend:latest
+    build: ./backend
+    image: your-dockerhub-username/taskflow-backend:latest
     container_name: taskflow_backend
     restart: always
     ports:
@@ -38,7 +39,8 @@ services:
       - taskflow-network
 
   frontend:
-    image: sai102402/taskflow-frontend:latest
+    build: ./frontend
+    image: your-dockerhub-username/taskflow-frontend:latest
     container_name: taskflow_frontend
     restart: always
     ports:

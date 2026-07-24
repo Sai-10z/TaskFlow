@@ -52,8 +52,8 @@ function Register() {
 
   return (
     <AuthLayout>
-      <motion.div 
-        layoutId="auth-hero" 
+      <motion.div
+        layoutId="auth-hero"
         className="auth-hero-section"
       >
         <motion.div
@@ -72,8 +72,8 @@ function Register() {
         </motion.div>
       </motion.div>
 
-      <motion.div 
-        layoutId="auth-form" 
+      <motion.div
+        layoutId="auth-form"
         className="auth-form-section"
       >
         <motion.div
